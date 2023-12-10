@@ -24,18 +24,18 @@ void gradientDescentForADAM(double*, double*, double*, double*, double, double, 
 void testing(double*, double**, int, int, int*, int);
 
 int main() {
-	int i, j, trainingSize, maxIter;
+    int i, j, trainingSize, maxIter;
     FILE *file;
     char fileName[100];
     char ***matrix;
     int sentenceCount = 0, dictSize;
     int wordCounts[MAX_SENTENCES] = {0};
-	char **dict;
-	int *set;
-	double **hotVectors, **W;
-	double eps, tolerans;
-	
-	srand(time(0));
+    char **dict;
+    int *set;
+    double **hotVectors, **W;
+    double eps, tolerans;
+
+    srand(time(0));
 	
     printf("Enter the file name: ");
     scanf("%s", fileName);
