@@ -7,26 +7,25 @@
 #define MAX_WORDS 15
 #define MAX_CHARS 100
 
-void tokenizeSentence(char*, char***, int, int*);
-void shuffle(int*, int);
-int createDict(char***, int, int*, char***);
-void seperateIntoTrainingSet(int**, int);
-void createHotVectors(char***, double***, int, int*, char**, int);
+void testing(double*, double**, int, int, int*, int);
 void regressionWithGD(double*, int*, int, int, double**, double, double, int);
-double dotProduct(double*, double*, int);
-double getYi(int*, int);
-double lossFunction(double*, int, int*, double**, int);
-void gradientDescent(double*, double*, double, int);
-void derivative(double*, double*, int, int*, double**, int, double);
 void regressionWithSGD(double*, int*, int, int, double**, double, double, int);
 void regressionWithADAM(double*, int*, int, int, double**, double, double, int);
+void gradientDescent(double*, double*, double, int);
 void gradientDescentForADAM(double*, double*, double*, double*, double, double, double, int, int);
-void testing(double*, double**, int, int, int*, int);
+void derivative(double*, double*, int, int*, double**, int, double);
+double lossFunction(double*, int, int*, double**, int);
+double getYi(int*, int);
+double dotProduct(double*, double*, int);
+void seperateIntoTrainingSet(int**, int);
+void shuffle(int*, int);
+void createHotVectors(char***, double***, int, int*, char**, int);
+int createDict(char***, int, int*, char***);
+void tokenizeSentence(char*, char***, int, int*);
+int readFromFile(char*** matrix, int* sentenceCount, int* wordCounts);
 
 int main() {
     int i, j, trainingSize, maxIter;
-    FILE *file;
-    char fileName[100];
     char ***matrix;
     int sentenceCount = 0, dictSize;
     int wordCounts[MAX_SENTENCES] = {0};
@@ -37,16 +36,7 @@ int main() {
 
     srand(time(0));
 	
-    printf("Enter the file name: ");
-    scanf("%s", fileName);
-
-    file = fopen(fileName, "r");
-    if (file == NULL) {
-        perror("Error opening file");
-        return 1;
-    }
-
-    // Allocate memory for the 3D matrix that stores sentences
+	// Allocate memory for the 3D matrix that stores sentences
     matrix = (char***)malloc(MAX_SENTENCES * sizeof(char**));
     for (i = 0; i < MAX_SENTENCES; i++) {
         matrix[i] = (char**)malloc(MAX_WORDS * sizeof(char*));
@@ -54,22 +44,8 @@ int main() {
             matrix[i][j] = (char*)malloc(MAX_CHARS * sizeof(char));
         }
     }
-
-    // Read sentences from the file
-    while (fgets(matrix[sentenceCount][0], MAX_CHARS, file) != NULL) {
-        matrix[sentenceCount][0][strcspn(matrix[sentenceCount][0], "\n")] = '\0';
-
-        tokenizeSentence(matrix[sentenceCount][0], matrix, sentenceCount, &wordCounts[sentenceCount]);
-
-        sentenceCount++;
-
-        if (sentenceCount >= MAX_SENTENCES) {
-            printf("Maximum number of sentences reached. Exiting.\n");
-            break;
-        }
-    }
-	
-    fclose(file);
+    
+    if(readFromFile(matrix, &sentenceCount, wordCounts)) return 1;
 	
 	trainingSize = (sentenceCount * 4) / 5;
 	
@@ -292,6 +268,23 @@ void shuffle(int *array, int size) {
     }
 }
 
+void createHotVectors(char*** matrix, double*** hotVectors, int sentenceCount, int* wordCounts, char** dict, int dictSize){
+	int i, j, k;
+	
+	*hotVectors = (double**) calloc(sentenceCount, sizeof(double*));
+	for(i=0;i<sentenceCount;i++) (*hotVectors)[i] = (double*) calloc(dictSize, sizeof(double));
+	
+	for(k=0;k<dictSize;k++){
+		for(i=0;i<sentenceCount;i++){
+    		for(j=0;j<wordCounts[i];j++){
+	    		if(!strcmp(matrix[i][j], dict[k])){
+	    			(*hotVectors)[i][k] = 1;
+				}
+			}
+		}
+	}
+}
+
 int createDict(char*** matrix, int sentenceCount, int* wordCounts, char*** dict){
 	int i, j, k, count = 0;
 	char** temp;
@@ -326,23 +319,6 @@ int createDict(char*** matrix, int sentenceCount, int* wordCounts, char*** dict)
 	return count;
 }
 
-void createHotVectors(char*** matrix, double*** hotVectors, int sentenceCount, int* wordCounts, char** dict, int dictSize){
-	int i, j, k;
-	
-	*hotVectors = (double**) calloc(sentenceCount, sizeof(double*));
-	for(i=0;i<sentenceCount;i++) (*hotVectors)[i] = (double*) calloc(dictSize, sizeof(double));
-	
-	for(k=0;k<dictSize;k++){
-		for(i=0;i<sentenceCount;i++){
-    		for(j=0;j<wordCounts[i];j++){
-	    		if(!strcmp(matrix[i][j], dict[k])){
-	    			(*hotVectors)[i][k] = 1;
-				}
-			}
-		}
-	}
-}
-
 void tokenizeSentence(char* sentence, char*** matrix, int sentenceIndex, int* wordCounts) {
     char* token = strtok(sentence, " ");
     int wordIndex = 0;
@@ -359,4 +335,35 @@ void tokenizeSentence(char* sentence, char*** matrix, int sentenceIndex, int* wo
         }
     }
     *wordCounts = wordIndex;
+}
+
+int readFromFile(char*** matrix, int* sentenceCount, int* wordCounts){
+	FILE *file;
+    char fileName[100];
+    
+	printf("Enter the file name: ");
+    scanf("%s", fileName);
+
+    file = fopen(fileName, "r");
+    if (file == NULL) {
+        perror("Error opening file");
+        return 1;
+    }
+
+    // Read sentences from the file
+    while (fgets(matrix[*sentenceCount][0], MAX_CHARS, file) != NULL) {
+        matrix[*sentenceCount][0][strcspn(matrix[*sentenceCount][0], "\n")] = '\0';
+
+        tokenizeSentence(matrix[*sentenceCount][0], matrix, *sentenceCount, &wordCounts[*sentenceCount]);
+
+        (*sentenceCount)++;
+
+        if (*sentenceCount >= MAX_SENTENCES) {
+            printf("Maximum number of sentences reached. Exiting.\n");
+            break;
+        }
+    }
+	
+    fclose(file);
+    return 0;
 }
