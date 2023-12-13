@@ -129,63 +129,55 @@ void testing(double* W, double** hotVectors, int sentenceCount, int trainingSize
 
 void regressionWithGD(double* W, int* set, int dictSize, int trainingSize, double** hotVectors, double eps, double tolerans, int maxIter){
 	double lossOld = 0, lossNew = 0;
-	int i=0, j;
+	int i=0;
 	double* dW = (double*) malloc(dictSize * sizeof(double));
 	
 	clock_t starttime, endtime;
 	FILE *file = fopen("file1.txt", "a");
-	FILE *f = fopen("w.txt", "a");
 	if(file == 0) return;
-	if(f == 0) return;
 	starttime = clock();
 	do{
 		//printf("%d. iterasyon\n", i+1);
 		lossOld = lossNew;
-		for(j=0;j<dictSize;j++) fprintf(f, "%lf,", W[j]);
-		fprintf(f, "\n");
 		lossNew = lossFunction(W, trainingSize, set, hotVectors, dictSize);
 		derivative(dW,W, trainingSize,set,hotVectors,dictSize,eps);
 		gradientDescent(dW, W, eps, dictSize);
 		fprintf(file, "%lf\n", lossNew);
 		i++;
 	} while(i < maxIter && fabs(lossOld - lossNew) > tolerans);
+	
 	fprintf(file, "%s\n", "stop");
 	endtime = clock();
 	fprintf(file, "%lf\n", (double) (endtime - starttime) / CLOCKS_PER_SEC);
 	fclose(file);
-	fclose(f);
 	printf("\nit took %d iterations\n", i);
 }
 
 void regressionWithSGD(double* W, int* set, int dictSize, int trainingSize, double** hotVectors, double eps, double tolerans, int maxIter){
 	double lossOld = 0, lossNew = 0;
-	int i=0, j, stochasticSize = trainingSize / 5;
+	int i=0, stochasticSize = trainingSize / 5;
 	double* dW = (double*) malloc(dictSize * sizeof(double));
 	
 	clock_t starttime, endtime;
 	FILE *file = fopen("file2.txt", "a");
-	FILE *f = fopen("w.txt", "a");
 	if(file == 0) return;
-	if(f == 0) return;
 	starttime = clock();
 	
 	do{
 		//printf("%d. iterasyon - ", i+1);
 		shuffle(set, trainingSize);
 		lossOld = lossNew;
-		for(j=0;j<dictSize;j++) fprintf(f, "%lf,", W[j]);
-		fprintf(f, "\n");
 		lossNew = lossFunction(W, trainingSize, set, hotVectors, dictSize);
 		derivative(dW, W,stochasticSize,set,hotVectors, dictSize,eps);
 		gradientDescent(dW, W, eps, dictSize);
 		fprintf(file, "%lf\n", lossNew);
 		i++;
 	} while(i < maxIter && fabs(lossOld - lossNew) > tolerans);
+	
 	fprintf(file, "%s\n", "stop");
 	endtime = clock();
 	fprintf(file, "%lf\n", (double) (endtime - starttime) / CLOCKS_PER_SEC);
 	fclose(file);
-	fclose(f);
 	printf("\nit took %d iterations\n", i);
 }
 
@@ -196,7 +188,7 @@ void gradientDescent(double* dW, double* W, double eps, int dictSize){
 
 void regressionWithADAM(double* W, int* set, int dictSize, int trainingSize, double** hotVectors, double eps, double tolerans, int maxIter){
 	double lossOld = 0, lossNew = 0, b1 = 0.9, b2 = 0.999;
-	int i=0, j, stochasticSize = trainingSize / 5;
+	int i=1, stochasticSize = trainingSize / 5;
 	
 	double* dW = (double*) calloc(dictSize, sizeof(double));
 	double *G = (double*) calloc(dictSize, sizeof(double));
@@ -204,29 +196,24 @@ void regressionWithADAM(double* W, int* set, int dictSize, int trainingSize, dou
 	
 	clock_t starttime, endtime;
 	FILE *file = fopen("file3.txt", "a");
-	FILE *f = fopen("w.txt", "a");
 	if(file == 0) return;
-	if(f == 0) return;
 	starttime = clock();
 	
 	do{
 		//printf("%d. iterasyon - ", i+1);
-		i++;
 		shuffle(set, trainingSize);
 		lossOld = lossNew;
-		for(j=0;j<dictSize;j++) fprintf(f, "%lf,", W[j]);
-		fprintf(f, "\n");
 		lossNew = lossFunction(W, trainingSize, set, hotVectors, dictSize);
 		derivative(dW, W,stochasticSize,set,hotVectors, dictSize,eps);
 		gradientDescentForADAM(dW, G, V, W, b1, b2, eps, dictSize, i);
 		fprintf(file, "%lf\n", lossNew);
+		i++;
 	} while(i < maxIter && fabs(lossOld - lossNew) > tolerans);
+	
 	fprintf(file, "%s\n", "stop");
 	endtime = clock();
 	fprintf(file, "%lf\n", (double) (endtime - starttime) / CLOCKS_PER_SEC);
 	fclose(file);
-	fprintf(f, "%s\n", "stop");
-	fclose(f);
 	printf("\nit took %d iterations\n", i);
 }
 
