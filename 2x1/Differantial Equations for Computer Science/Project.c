@@ -22,7 +22,7 @@ void shuffle(int*, int);
 void createHotVectors(char***, double***, int, int*, char**, int);
 int createDict(char***, int, int*, char***);
 void tokenizeSentence(char*, char***, int, int*);
-int readFromFile(char*** matrix, int* sentenceCount, int* wordCounts);
+int readFromFile(char***, int*, int*);
 
 int main() {
     int i, j, trainingSize, maxIter;
