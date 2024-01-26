@@ -15,6 +15,15 @@ public class Individual extends Subscriber implements java.io.Serializable {
         return this.toString();
     }
 
+    @Override
+    public boolean canSend(int issueMonth, double amount) {
+        if(this.getCreditCard().getBalance() >= amount){
+            this.getCreditCard().discount(amount);
+            return true;
+        }
+        return false;
+    }
+
     public CreditCard getCreditCard() {
         return creditCard;
     }
