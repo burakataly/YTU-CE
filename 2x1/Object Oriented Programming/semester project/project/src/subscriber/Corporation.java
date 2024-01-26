@@ -23,6 +23,11 @@ public class Corporation extends Subscriber implements java.io.Serializable {
     }
 
     @Override
+    public boolean canSend(int issueMonth, double amount) {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "Corporation{" + super.toString() +
                 "issueDay=" + issueDay +

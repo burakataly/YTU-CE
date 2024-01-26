@@ -43,6 +43,8 @@ public abstract class Subscriber implements java.io.Serializable {
         subscriptions.add(subscription);
     }
 
+    public abstract boolean canSend(int issueMonth, double amount);
+
     @Override
     public String toString() {
         return "Subscriber{" +

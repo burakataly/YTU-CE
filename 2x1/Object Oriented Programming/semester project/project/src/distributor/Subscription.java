@@ -21,16 +21,11 @@ public class Subscription implements java.io.Serializable {
     }
 
     public boolean canSend(int issueMonth){
-        if(subscriber instanceof Individual){
-            Individual individual = (Individual) subscriber;
-            double amount = journal.getIssuePrice() * (1 - journal.getDiscountRatio()) * copies;
-            if(individual.getCreditCard().getBalance() >= amount){
-                individual.getCreditCard().discount(amount);
-                acceptPayment(amount);
-                return true;
-            }
+        double amount = journal.getIssuePrice() * (1 - journal.getDiscountRatio()) * copies;
+        if(subscriber.canSend(issueMonth, amount)){
+            acceptPayment(amount);
+            return true;
         }
-        else if(subscriber instanceof Corporation) return true;
         return false;
     }
 
