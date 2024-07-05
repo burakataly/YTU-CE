@@ -207,25 +207,22 @@ void gradientDescentForADAM(double* dW, double* G, double* V, double* W, double 
 
 void derivative(double* dW, double* W, int trainingSize, int* set, double** hotVectors, int dictSize, double eps){
     int i,j;
-    double result, temp;
-	double *dotResults = (double*) malloc(trainingSize * sizeof(double));
+    double temp, dotResult;	
 	
-	for(i=0;i<trainingSize;i++){
-		dotResults[i] = dotProduct(W, hotVectors[set[i]], dictSize);
-	}
-	
-    for(i=0;i<dictSize;i++){
-    	result = 0;
-        for(j=0;j<trainingSize;j++){
-            temp = 1.0/cosh(dotResults[j]);
+    for(i=0;i<trainingSize;i++){
+    	dotResult = dotProduct(W, hotVectors[set[i]], dictSize);
+        for(j=0;j<dictSize;j++){
+            temp = 1.0/cosh(dotResult);
 			temp *= temp;
-            temp *= getYi(set,j) - tanh(dotResults[j]);
-            temp *= hotVectors[set[j]][i];
-            result += temp;
+            temp *= getYi(set,i) - tanh(dotResult);
+            temp *= hotVectors[set[i]][j];
+            dW[j] += temp;
         }
-        result *= (-2.0 / trainingSize);
-        dW[i] = result;
     }
+    
+    for(i=0;i<dictSize;i++){
+    	dW[i] *= (-2.0 / trainingSize);
+	}
 }
 
 double lossFunction(double* W, int trainingSize, int* set, double** hotVectors, int dictSize){
